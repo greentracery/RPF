@@ -1,0 +1,15 @@
+Options -Indexes
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+
+	RewriteBase /
+
+	RewriteCond %{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{REQUEST_FILENAME} -l [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule ^.*$ - [NC,L]
+	RewriteRule ^(css/|js/|styles/|images/|favicon\.ico|robots\.txt) - [NC,L]
+	RewriteRule ^.*$ index.php [NC,L]
+</IfModule>
