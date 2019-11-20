@@ -123,3 +123,9 @@ Framework suppors MySQL\MadiaDb, Firebird, Sqlite databases. You can define data
 
 You can create your own classer for another databases in /Includes/RPF_Db/ (type of datrabase must be supported by PHP PDO driver).
 
+Each action controller can potentially use its own database - database type, address, port, login and password can be overloaded in constructor.  It is not "good practice", but sometimes it can help your application to work with two (or more) different databases or two (or more) different types of databases at same time.
+You can find an example of such code in sample extension.
+
+Templates.
+Current version on framework uses old PHP compiling template engine Smarty (v.3.1). You can use your own favorite template engine, if necessary.  Replace code in the file /Includes/RPF/TemplateEngine.php with your own to use another engine.
+

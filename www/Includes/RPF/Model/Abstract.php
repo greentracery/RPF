@@ -110,6 +110,24 @@ abstract class RPF_Model_Abstract
 		if(count($result) == 0) return false;
 		return array_shift($result);
 	}
+	
+	/**
+	* Execute Select query
+	* @param string $query 
+	* @param array $placeholders
+	*
+	* @return array| boolean 'false'
+	*/
+	public function fetchColumn( $query, array $placeholders = array()  )
+	{
+		$result = $this->fetch($query, $placeholders, PDO::FETCH_NUM);
+		if(count($result) == 0) return false;
+		foreach($result as $row)
+		{
+			$out[] = $row[0];
+		}
+		return $out;
+	}
 
 	/**
 	* Execute Insert or Delete queries

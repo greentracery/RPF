@@ -159,6 +159,11 @@ Regions: <select name="region_id">
 {/if}
 </form>
 </div>
+<p>Each action controller can potentially use its own database - database type, address, port, login and password can be overloaded in constructor.  It is not "good practice", but sometimes it can help your application to work with two (or more) different databases or two (or more) different types of databases at same time.</p>
+<p>You can find an example of such code in sample extension.</p>
+<h2>Templates</h2>
+<p>Current version on framework uses old PHP compiling template engine Smarty (v.3.1). You can use your own favorite template engine, if necessary.  Replace code in the file /Includes/RPF/TemplateEngine.php with your own to use another engine.</p>
+<p>&nbsp;</p>
 </div>
 </body>
 </html>
