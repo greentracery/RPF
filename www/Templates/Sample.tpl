@@ -30,22 +30,22 @@ Supports MySQL\MadiaDb, Firebird, Sqlite databases, Smarty templates, buit-in cl
 <p>&nbsp;</p>
 <h2>Typical structure of extension:</h2>
 <pre>
-	|
-	+--[ExtensionName]
-	|	|
-	|	+--[Controller] - Folder for actionControllers MUST have this name;
-	|	|	|
-	|	|	+--Index.php - Default actionController;
-	|	|	+--ActionNameX.php - Other actionControllers (optional);
-	|	+--[Model] - Folder for extension's models clases (optional)
-	|	|	|
-	|	|	+--XXX.php - All files with models classes (optional)
-	|	+--[View] - Folder  for extension's viewes classes (optional)
-	|	|	|
-	|	|	+--YYY.php - - All files with viewes classes (optional)
-	|	+--OtherFiles.php - Other classes and functions of your extension (optional).
-	|
-	+--[OtherExtension] ...
+    |
+    +--[ExtensionName]
+    |    |
+    |    +--[Controller] - Folder for actionControllers MUST have this name;
+    |    |    |
+    |    |    +--Index.php - Default actionController;
+    |    |    +--ActionNameX.php - Other actionControllers (optional);
+    |    +--[Model] - Folder for extension's models clases (optional)
+    |    |    |
+    |    |    +--XXX.php - All files with models classes (optional)
+    |    +--[View] - Folder  for extension's viewes classes (optional)
+    |    |    |
+    |    |    +--YYY.php - - All files with viewes classes (optional)
+    |    +--OtherFiles.php - Other classes and functions of your extension (optional).
+    |
+    +--[OtherExtension] ...
 </pre>
 <p>An example of the structure of names can be seen in /Includes/Sample/</p>
 <p>&nbsp;</p>
@@ -61,77 +61,121 @@ Supports MySQL\MadiaDb, Firebird, Sqlite databases, Smarty templates, buit-in cl
 */
 class ExtensionName_Controller_Index extends RPF_Controller_Abstract  
 {
-	public function __construct()
-	{
-		parent::__construct();
-		
-		/**
-		Here we can:
-		 - get input parametres from request and filter it:
-		*/
-		$input  = new RPF_Input($this->request->getRequestData());
-		$someVariable = $input->filterSingle('someFieldName', RPF_Input::UINT); // unsigned int
-		
-		/**
-		 - get some data from model (database or other sourses) and put it into outdata array:
-		  (model class is placed in /Includes/ExtensionName/Model/SomeObject.php
-		*/
-		$model =  new ExtensionName_Model_SomeObject();
-		$outdata = $model->getSomeData();
-		
-		/**
-		 - render the template and send HTML page in response:
-		*/
-		$this->response =  $this->responseView('viewName', 'templateName', $outdata);
-		
-		/**
-		 - or send it in JSON representation for APIs or web-servises:
-		*/
-		$this->response =  $this->responseView('viewName', null, $outdata);
-		
-		/**
-		 - or make redirect to another URL with adittional params in query string:
-		*/
-		$this->response =  $this->responseRedirect($newURL, $outdata);
-		
-		/**
-		 - or send an error:
-		*/
-		$this->response =  $this->responseError('Error message', 404); // or another Http code
-		
-		/**
-		 - or stop action and do nothing:
-		*/
-		exit();
-	}
-
+    public function __construct()
+    {
+        parent::__construct();
+        
+        /**
+        Here we can:
+         - get input parametres from request and filter it:
+        */
+        
+        $input  = new RPF_Input($this->request->getRequestData());
+        $someVariable = $input->filterSingle('someFieldName', RPF_Input::UINT); // unsigned int
+        
+        /**
+        * Supports next types of input variables:
+        * - STRING (default '');
+        * - NUM, UNUM (default 0);
+        * - INT, UINT (default 0);
+        * - FLOAT (default 0);
+        * - BOOLEAN (default false);
+        * - BINARY (default '');
+        * - ARRAY_SIMPLE (default array() );
+        * - JSON_ARRAY (default array() );
+        * - DATETIME (default 0);
+        */
+        
+        /**
+         - get some data from model (database or other sourses) and put it into outdata array:
+          (model class is placed in /Includes/ExtensionName/Model/SomeObject.php
+        */
+        
+        $model =  new ExtensionName_Model_SomeObject();
+        $outdata = $model->getSomeData();
+        
+        /**
+        * - render the template and send HTML page in response
+        * (viewName can be RPF_View_Index or must extends it):
+        */
+        
+        $this->response =  $this->responseView('viewName', 'templateName', $outdata);
+        
+        /**
+        * - or send it in JSON representation for APIs or web-servises
+        * (viewName can be RPF_View_JSON or must extends it):
+        */
+        
+        $this->response =  $this->responseView('viewName', null, $outdata);
+        
+        /**
+        * - or create image from BLOB and send it
+        * (viewName can be RPF_View_Image or must extends it):
+        */
+        
+        $this->response =  $this->responseView('viewName', null, $imagedata);
+        
+        /**
+        * array $imagedata must contains next elements:
+        * - 'image_mime_type' - MIME type of image,
+        * - 'image_size' - size of image (bytes),
+        * - 'image_data' - binary data from image file or BLOB.
+        */
+        
+        /**
+        * - or make redirect to another URL with adittional params in query string:
+        */
+        
+        $this->response =  $this->responseRedirect($newURL, $outdata);
+        
+        /**
+        * - or send an error:
+        */
+        
+        $this->response =  $this->responseError('Error message', 404); // or another Http code
+        
+        /**
+         - or stop action and do nothing:
+        */
+        
+        exit();
+    }
 }
 </pre>
 </code>
 <h2>Routing and URL format.</h2>
 <p>Routing supports next URL formats for action controllers:</p>
 <ul>
-<li><p>servername/[index.php]/Extension/ or servername/[index.php]/Extension/?param1=value1&amp;param2=value2... for default controller</p>
+<li><p><i>servername/[index.php]/Extension/</i>
+<br>or<br>
+<i>servername/[index.php]/Extension/?param1=value1&amp;param2=value2...</i> for default controller</p>
 <p>Example: defauul action controller for this sample extension</p>
-<a href="/index.php/Sample/" target="_blank">Default controller w/o parametres in query string</a> or 
-<a href="/index.php/Sample/?region_id=1" target="_blank">Default controller with parametres in query string.</a>
+&nbsp;<a href="/index.php/Sample/" target="_blank">Default controller w/o parametres in query string</a>
+<br>or<br>
+&nbsp;<a href="/index.php/Sample/?region_id=1" target="_blank">Default controller with parametres in query string.</a>
 </li>
-<li><p>servername/[index.php]/Extension/Action or servername/[index.php]/Extension/Action?param1=value1&amp;param2=value2... for any controller</p>
+<li><p><i>servername/[index.php]/Extension/Action</i>
+<br>or<br>
+<i>servername/[index.php]/Extension/Action?param1=value1&amp;param2=value2...</i> for any controller</p>
 <p>Example: JSON response for API with data from test database `Northwind`</p>
-<a href="/index.php/Sample/JSON" target="_blank">JSON controller w/o parametres in query string</a> or 
-<a href="/index.php/Sample/JSON?region_id=1" target="_blank">JSON controller with parametres in query string.</a> 
+&nbsp;<a href="/index.php/Sample/JSON" target="_blank">JSON controller w/o parametres in query string</a>
+<br>or<br>
+&nbsp;<a href="/index.php/Sample/JSON?region_id=1" target="_blank">JSON controller with parametres in query string.</a> 
 </li>
-<li><p>servername/[index.php]/Extension/?action=actionName or servername/[index.php]/Extension/?action=actionName&amp;param1=value1&amp;param2=value2... for any controller</p>
+<li><p><i>servername/[index.php]/Extension/?action=actionName</i> 
+<br>or<br>
+<i>servername/[index.php]/Extension/?action=actionName&amp;param1=value1&amp;param2=value2...</i> for any controller</p>
 <p>Example: JSON response for API with data from test database `Northwind`</p>
-<a href="/index.php/Sample/?action=JSON" target="_blank">Controller name in query string</a> or 
-<a href="/index.php/Sample/?action=JSON&region_id=1" target="_blank">Controller name with other parametres in query string.</a> 
+&nbsp;<a href="/index.php/Sample/?action=JSON" target="_blank">Controller name in query string</a>
+<br>or<br> 
+&nbsp;<a href="/index.php/Sample/?action=JSON&region_id=1" target="_blank">Controller name with other parametres in query string.</a> 
 </li>
 </ul>
 Note: if you needs to send action name for default controller in query string, you can use `?action=Index` for this action.
 <a name="Db">
 <h2>Databases</h2>
-<p>Framework suppors MySQL\MadiaDb, Firebird, Sqlite databases. You can define database type and othes required parametres in Config file.</p>
-<p>You can create your own classer for another databases in /Includes/RPF_Db/ (type of datrabase must be supported by PHP PDO driver).</p>
+<p>Framework supports MySQL\MadiaDb, Firebird, Sqlite databases. You can define database type and othes required parametres in Config file.</p>
+<p>You can create your own classes for another databases in /Includes/RPF_Db/ (type of datrabase must be supported by PHP PDO driver).</p>
 <p>The following shows an example of working with Sqlite test database ('Northwind'):</p>
 <div class="DbSample">
 <form name="regions" action="/index.php/Sample/#Db" method="POST">

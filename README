@@ -26,22 +26,22 @@ See PSR-0, PSR-4 standards for more info.
  
 Typical structure of extension:
 
-	|
-	+--[ExtensionName]
-	|	|
-	|	+--[Controller] - Folder for actionControllers MUST have this name;
-	|	|	|
-	|	|	+--Index.php - Default actionController;
-	|	|	+--ActionNameX.php - Other actionControllers (optional);
-	|	+--[Model] - Folder for extension's models clases (optional)
-	|	|	|
-	|	|	+--XXX.php - All files with models classes (optional)
-	|	+--[View] - Folder  for extension's viewes classes (optional)
-	|	|	|
-	|	|	+--YYY.php - - All files with viewes classes (optional)
-	|	+--OtherFiles.php - Other classes and functions of your extension (optional).
-	|
-	+--[OtherExtension] ...
+    |
+    +--[ExtensionName]
+    |    |
+    |    +--[Controller] - Folder for actionControllers MUST have this name;
+    |    |    |
+    |    |    +--Index.php - Default actionController;
+    |    |    +--ActionNameX.php - Other actionControllers (optional);
+    |    +--[Model] - Folder for extension's models clases (optional)
+    |    |    |
+    |    |    +--XXX.php - All files with models classes (optional)
+    |    +--[View] - Folder  for extension's viewes classes (optional)
+    |    |    |
+    |    |    +--YYY.php - - All files with viewes classes (optional)
+    |    +--OtherFiles.php - Other classes and functions of your extension (optional).
+    |
+    +--[OtherExtension] ...
 
 An example of the structure of names can be seen in /Includes/Sample/
 
@@ -60,68 +60,109 @@ The following describes the typical code of actionController:
 */
 class ExtensionName_Controller_Index extends RPF_Controller_Abstract  
 {
-	public function __construct()
-	{
-		parent::__construct();
-		
-		/**
-		Here we can:
-		 - get input parametres from request and filter it:
-		*/
-		$input  = new RPF_Input($this->request->getRequestData());
-		$someVariable = $input->filterSingle('someFieldName', RPF_Input::UINT); // unsigned int
-		
-		/**
-		 - get some data from model (database or other sourses) and put it into outdata array:
-		  (model class is placed in /Includes/ExtensionName/Model/SomeObject.php
-		*/
-		$model =  new ExtensionName_Model_SomeObject();
-		$outdata = $model->getSomeData();
-		
-		/**
-		 - render the template and send HTML page in response:
-		*/
-		$this->response =  $this->responseView('viewName', 'templateName', $outdata);
-		
-		/**
-		 - or send it in JSON representation for APIs or web-servises:
-		*/
-		$this->response =  $this->responseView('viewName', null, $outdata);
-		
-		/**
-		 - or make redirect to another URL with adittional params in query string:
-		*/
-		$this->response =  $this->responseRedirect($newURL, $outdata);
-		
-		/**
-		 - or send an error:
-		*/
-		$this->response =  $this->responseError('Error message', 404); // or another Http code
-		
-		/**
-		 - or stop action and do nothing:
-		*/
-		exit();
-	}
-
+    public function __construct()
+    {
+        parent::__construct();
+        
+        /**
+        Here we can:
+         - get input parametres from request and filter it:
+        */
+        
+        $input  = new RPF_Input($this->request->getRequestData());
+        $someVariable = $input->filterSingle('someFieldName', RPF_Input::UINT); // unsigned int
+        
+        /**
+        * Supports next types of input variables:
+        * - STRING (default '');
+        * - NUM, UNUM (default 0);
+        * - INT, UINT (default 0);
+        * - FLOAT (default 0);
+        * - BOOLEAN (default false);
+        * - BINARY (default '');
+        * - ARRAY_SIMPLE (default array() );
+        * - JSON_ARRAY (default array() );
+        * - DATETIME (default 0);
+        */
+        
+        /**
+         - get some data from model (database or other sourses) and put it into outdata array:
+          (model class is placed in /Includes/ExtensionName/Model/SomeObject.php
+        */
+        
+        $model =  new ExtensionName_Model_SomeObject();
+        $outdata = $model->getSomeData();
+        
+        /**
+        * - render the template and send HTML page in response
+        * (viewName can be RPF_View_Index or must extends it):
+        */
+        
+        $this->response =  $this->responseView('viewName', 'templateName', $outdata);
+        
+        /**
+        * - or send it in JSON representation for APIs or web-servises
+        * (viewName can be RPF_View_JSON or must extends it):
+        */
+        
+        $this->response =  $this->responseView('viewName', null, $outdata);
+        
+        /**
+        * - or create image from BLOB and send it
+        * (viewName can be RPF_View_Image or must extends it):
+        */
+        
+        $this->response =  $this->responseView('viewName', null, $imagedata);
+        
+        /**
+        * array $imagedata must contains next elements:
+        * - 'image_mime_type' - MIME type of image,
+        * - 'image_size' - size of image (bytes),
+        * - 'image_data' - binary data from image file or BLOB.
+        */
+        
+        /**
+        * - or make redirect to another URL with adittional params in query string:
+        */
+        
+        $this->response =  $this->responseRedirect($newURL, $outdata);
+        
+        /**
+        * - or send an error:
+        */
+        
+        $this->response =  $this->responseError('Error message', 404); // or another Http code
+        
+        /**
+         - or stop action and do nothing:
+        */
+        
+        exit();
+    }
 }
 
 Routing and URL format.
 
 Routing supports next URL formats for action controllers:
 
-    servername/[index.php]/Extension/ or servername/[index.php]/Extension/?param1=value1&param2=value2... for default controller
+    servername/[index.php]/Extension/ 
+or 
+    servername/[index.php]/Extension/?param1=value1&param2=value2... for default controller
 
-    servername/[index.php]/Extension/Action or servername/[index.php]/Extension/Action?param1=value1&param2=value2... for any controller
+    servername/[index.php]/Extension/Action 
+or 
+    servername/[index.php]/Extension/Action?param1=value1&param2=value2... for any controller
 
-    servername/[index.php]/Extension/?action=actionName or  servername/[index.php]/Extension/?action=actionName&param1=value1&param2=value2... for any controller
+    servername/[index.php]/Extension/?action=actionName 
+or 
+    servername/[index.php]/Extension/?action=actionName&param1=value1&param2=value2... for any controller
 
 Note: if you needs to send action name for default controller in query string, you can use `?action=Index` for this action.
 Databases
 
-Framework suppors MySQL\MadiaDb, Firebird, Sqlite databases. You can define database type and othes required parametres in Config file.
+Framework supports MySQL\MadiaDb, Firebird, Sqlite databases. You can define database type and othes required parametres in Config file.
 
-You can create your own classer for another databases in /Includes/RPF_Db/ (type of datrabase must be supported by PHP PDO driver).
+You can create your own classes for another databases in /Includes/RPF_Db/ (type of datrabase must be supported by PHP PDO driver).
 
 Each action controller can potentially use its own database - database type, address, port, login and password can be overloaded in constructor.  It is not "good practice", but sometimes it can help your application to work with two (or more) different databases or two (or more) different types of databases at same time.
 You can find an example of such code in sample extension.
