@@ -57,7 +57,6 @@ class RPF_FrontController
 		$this->request = new RPF_HttpRequest(); 
 		$this->action = $this->getAction();
 		$this->extension = $this->getExtension();
-
 		self::$instance = $this;
 	}
 
@@ -69,30 +68,21 @@ class RPF_FrontController
 	public function getAction()
 	{
 		$routePath = (!empty($this->request->routePath))? 
-		$this->request->routePath : $this->request->staticRoutePath;
+			$this->request->routePath : $this->request->staticRoutePath;
 		$httpGET = $this->request->httpGETParams;
 		$httpPOST = $this->request->httpPOSTParams;
 		
+		// Get actionName from URL:
 		$routingParts = explode('/', $routePath, 2); 
-		$routingCount = count($routingParts); 
-		
-		switch($routingCount)
-		{
-			case 1:
-				$actionOrder = 0;
-			break;
-			case 2:
-				$actionOrder = 1;
-			break;
-		}
-		
-		$action = isset($routingParts[$actionOrder]) ? $routingParts[$actionOrder] : '' ;  
-		
-		if(empty($action) && isset($httpPOST['action'])) $action = $httpPOST['action'];
-		
+		$action = isset($routingParts[1]) ? $routingParts[1] : '' ;  
+		// If actionName is not set in URL -  check POST param.'action':
+		if(empty($action) && isset($httpPOST['action'])) $action = $httpPOST['action']; 
+		// If actionName is not set in URL or in POST -  check GET param.'action':
 		if(empty($action) && isset($httpGET['action'])) $action = $httpGET['action'];
+		// If actionName is not set in URL or in POST  or in GET -  use default action Index:
+		if(empty($action)) $action = 'Index';
 		
-		return $action;
+		return ucfirst($action);
 	}
 
 	/**
@@ -103,24 +93,26 @@ class RPF_FrontController
 	public function getExtension()
 	{
 		$routePath = (!empty($this->request->routePath))? 
-		$this->request->routePath : $this->request->staticRoutePath;
+			$this->request->routePath : $this->request->staticRoutePath;
 		$httpGET = $this->request->httpGETParams;
 		$httpPOST = $this->request->httpPOSTParams;
 		
+		// Get extensionName from URL:
 		$routingParts = explode('/', $routePath, 2); 
-		$routingCount = count($routingParts); 
+		$extension = (isset($routingParts[0])) ? $routingParts[0] : '' ;  
+		// If extensionName is not set in URL -  check POST param.'package':
+		if(empty($extension) && isset($httpPOST['package'])) $extension = $httpPOST['package']; 
+		// If extensionName is not set in URL or in POST -  check GET param.'action':
+		if(empty($extension) && isset($httpGET['package'])) $extension = $httpGET['package'];
+		// If actionName is not set in URL or in POST  or in GET -  use default package RPF:
+		if(empty($extension)) $extension = 'RPF';
 		
-		$extension = ($routingCount > 1 && isset($routingParts[0])) ? $routingParts[0] : '' ;  
-		
-		return $extension;
+		return ucfirst($extension);
 	}
 
 	public function ProcessAction()
 	{
 		$loader = RPF_Autoloader::getInstance();
-		
-		$this->action = (!empty($this->action))? ucfirst($this->action) : 'Index';
-		$this->extension = (!empty($this->extension))? ucfirst($this->extension) : '';
 		
 		$actionControllerClassName[] = $this->extension;
 		$actionControllerClassName[] = 'Controller';
@@ -132,21 +124,12 @@ class RPF_FrontController
 		{
 			if(!$loader->autoload($actionControllerClass))
 			{
-				// If URL contained extension name without final slash,
-				// try to load default controller for this extension:
-				$actionControllerClass = $this->action.'_Controller_Index'; // Extension -> Extension/[Index]
-				
-				if(!$loader->autoload($actionControllerClass))
 				throw new Exception("Can't load class $actionControllerClass in ". __CLASS__ . "::" . __METHOD__);
 			}
 		}
 		catch(Exception $e)
 		{
 			RPF_ApplicationError::LogException($e);
-			// try to load controller for this action from RPF package:
-			$actionControllerClass = 'RPF_Controller_'.$this->action;
-			
-			if(!$loader->autoload($actionControllerClass))
 			$actionControllerClass = 'RPF_CustomErrorHandler_NotFound';
 		}
 		
