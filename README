@@ -48,7 +48,7 @@ An example of the structure of names can be seen in /Includes/Sample/
  
 Action Controllers
 
-Any actionControlles extends abstract class `RPF_Controller_Abstract` with it's properties & methods. Filename of actionController MUST have have the same name as the action name, or Index.php for default controller. All actionControllers MUST be placed in subfolder `Controller` of your extension's folder (or in folder /Includes/RPF/Controller/ for main framework core).
+Any actionControlles extends abstract class `RPF_Controller_Abstract` with it's properties & methods, or any other ActionController Class. Filename of actionController MUST have have the same name as the action name, or Index.php for default controller. All actionControllers MUST be placed in subfolder `Controller` of your extension's folder (or in folder /Includes/RPF/Controller/ for main framework core).
 
 You can define default action controller in a configuration file (see Config.php)
 
@@ -141,23 +141,27 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
     }
 }
 
-Routing and URL format.
-
 Routing supports next URL formats for action controllers:
+- If Apache moldule `mod_rewrite` (or its analogs for another servers) is avaialble and RewriteEngine is on:
 
-    servername/[index.php]/Extension/ 
-or 
-    servername/[index.php]/Extension/?param1=value1&param2=value2... for default controller
+        servername/Extension/
+        or
+        servername/Extension/?param1=value1&param2=value2... for default action controller
 
-    servername/[index.php]/Extension/Action 
-or 
-    servername/[index.php]/Extension/Action?param1=value1&param2=value2... for any controller
+        servername/Extension/Action
+        or
+        servername/Extension/Action?param1=value1&param2=value2... for any action controller
 
-    servername/[index.php]/Extension/?action=actionName 
-or 
-    servername/[index.php]/Extension/?action=actionName&param1=value1&param2=value2... for any controller
+- If Apache moldule `mod_rewrite` (or its analogs for another servers) is not supported or disabled, or RewriteEngine is off:
 
-Note: if you needs to send action name for default controller in query string, you can use `?action=Index` for this action.
+        servername/[index.php]/?package=ExtensionName[/]
+        or
+        servername/[index.php]/?package=Extension[/]?param1=value1&param2=value2... for default action controller
+
+        servername/[index.php]/?package=ExtensionName&action=actionName
+        or
+        servername/[index.php]/?package=Extension&action=Action&param1=value1&param2=value2... for any action controller
+
 Databases
 
 Framework supports MySQL\MadiaDb, Firebird, Sqlite databases. You can define database type and othes required parametres in Config file.

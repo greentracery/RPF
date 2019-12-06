@@ -22,7 +22,7 @@ class Sample_Controller_Redirect extends RPF_Controller_Abstract
 		
 		$param = array('referrer' => 'Index');
 		
-		$this->response =  $this->responseRedirect('/index.php/Sample/', $param);
+		$this->response =  $this->responseRedirect('/index.php?package=Sample', $param);
 	}
 
 }

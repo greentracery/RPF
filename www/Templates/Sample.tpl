@@ -50,7 +50,7 @@ Supports MySQL\MadiaDb, Firebird, Sqlite databases, Smarty templates, buit-in cl
 <p>An example of the structure of names can be seen in /Includes/Sample/</p>
 <p>&nbsp;</p>
 <h2>Action Controllers</h2>
-<p>Any actionControlles extends abstract class `RPF_Controller_Abstract` with it's properties &amp; methods. Filename of actionController MUST have have the same name as the action name, or Index.php for default controller. All actionControllers MUST be placed in subfolder `Controller` of your extension's folder (or in folder /Includes/RPF/Controller/ for main framework core).</p>
+<p>Any actionControlles extends abstract class `RPF_Controller_Abstract` with it's properties &amp; methods, or any other ActionController Class. Filename of actionController MUST have have the same name as the action name, or Index.php for default controller. All actionControllers MUST be placed in subfolder `Controller` of your extension's folder (or in folder /Includes/RPF/Controller/ for main framework core).</p>
 <p>You can define default action controller in a configuration file (see Config.php)</p>
 <p>The following describes the typical code of actionController:</p>
 <code>
@@ -146,39 +146,52 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
 <h2>Routing and URL format.</h2>
 <p>Routing supports next URL formats for action controllers:</p>
 <ul>
-<li><p><i>servername/[index.php]/Extension/</i>
-<br>or<br>
-<i>servername/[index.php]/Extension/?param1=value1&amp;param2=value2...</i> for default controller</p>
-<p>Example: defauul action controller for this sample extension</p>
-&nbsp;<a href="/index.php/Sample/" target="_blank">Default controller w/o parametres in query string</a>
-<br>or<br>
-&nbsp;<a href="/index.php/Sample/?region_id=1" target="_blank">Default controller with parametres in query string.</a>
+<li>
+<p>If Apache moldule `mod_rewrite` (or its analogs for another servers)  is avaialble and RewriteEngine is on:</p>
+	<ul>
+		<li><p><i>servername/Extension/</i>
+		<br>or<br>
+		<i>servername/Extension/?param1=value1&amp;param2=value2...</i> for default action controller</p>
+		<p>Example: defauul action controller for this sample extension</p>
+		&nbsp;<a href="/Sample/" target="_blank">Default action controller w/o parametres in query string</a>
+		<br>or<br>
+		&nbsp;<a href="/Sample/?region_id=1" target="_blank">Default action controller with parametres in query string.</a>
+		</li>
+		<li><p><i>servername/Extension/Action</i>
+		<br>or<br>
+		<i>servername/Extension/Action?param1=value1&amp;param2=value2...</i> for any action controller</p>
+		<p>Example: JSON response for API with data from test database `Northwind`</p>
+		&nbsp;<a href="/Sample/JSON" target="_blank">JSON action controller w/o parametres in query string</a>
+		<br>or<br>
+		&nbsp;<a href="/Sample/JSON?region_id=1" target="_blank">JSON action controller with parametres in query string.</a> 
+		</li>
+	</ul>
 </li>
-<li><p><i>servername/[index.php]/Extension/Action</i>
-<br>or<br>
-<i>servername/[index.php]/Extension/Action?param1=value1&amp;param2=value2...</i> for any controller</p>
-<p>Example: JSON response for API with data from test database `Northwind`</p>
-&nbsp;<a href="/index.php/Sample/JSON" target="_blank">JSON controller w/o parametres in query string</a>
-<br>or<br>
-&nbsp;<a href="/index.php/Sample/JSON?region_id=1" target="_blank">JSON controller with parametres in query string.</a> 
-</li>
-<li><p><i>servername/[index.php]/Extension/?action=actionName</i> 
-<br>or<br>
-<i>servername/[index.php]/Extension/?action=actionName&amp;param1=value1&amp;param2=value2...</i> for any controller</p>
-<p>Example: JSON response for API with data from test database `Northwind`</p>
-&nbsp;<a href="/index.php/Sample/?action=JSON" target="_blank">Controller name in query string</a>
-<br>or<br> 
-&nbsp;<a href="/index.php/Sample/?action=JSON&region_id=1" target="_blank">Controller name with other parametres in query string.</a> 
+<li>
+<p>If Apache moldule `mod_rewrite` (or its analogs for another servers)  is not supported or disabled, or RewriteEngine is off:</p>
+	<ul>
+		<li><p><i>servername/[index.php]/?package=ExtensionName[/]</i> 
+		<br>or<br>
+		<i>servername/[index.php]/?package=Extension[/]?param1=value1&amp;param2=value2...</i> for default action controller</p>
+		</li>
+		<li><p><i>servername/[index.php]/?package=ExtensionName&amp;action=actionName</i> 
+		<br>or<br>
+		<i>servername/[index.php]/?package=Extension&amp;action=Action&amp;param1=value1&amp;param2=value2...</i> for any action controller</p>
+		<p>Example: JSON response for API with data from test database `Northwind`</p>
+		&nbsp;<a href="/?package=Sample&action=JSON" target="_blank">Action controller name in query string</a>
+		<br>or<br> 
+		&nbsp;<a href="/?package=Sample&action=JSON&region_id=1" target="_blank">Action controller name with other parametres in query string.</a> 
+		</li>
+	</ul>
 </li>
 </ul>
-Note: if you needs to send action name for default controller in query string, you can use `?action=Index` for this action.
 <a name="Db">
 <h2>Databases</h2>
 <p>Framework supports MySQL\MadiaDb, Firebird, Sqlite databases. You can define database type and othes required parametres in Config file.</p>
 <p>You can create your own classes for another databases in /Includes/RPF_Db/ (type of datrabase must be supported by PHP PDO driver).</p>
 <p>The following shows an example of working with Sqlite test database ('Northwind'):</p>
 <div class="DbSample">
-<form name="regions" action="/index.php/Sample/#Db" method="POST">
+<form name="regions" action="/?package=Sample#Db" method="POST">
 {if isset($regions)}
 Regions: <select name="region_id">
 <option value="0"></option>
