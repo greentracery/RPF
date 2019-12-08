@@ -16,11 +16,6 @@
  
 class RPF_Link
 {
-	/**
-	 * @var string
-	 */
-	protected static $_indexRoute = 'index.php';
-
 	protected $_linkString = '';
 
 	/**
@@ -46,7 +41,7 @@ class RPF_Link
 	 * Builds a link to resource. The type should contain a prefix
 	 * optionally split by a "/" with the specific action (eg "templates/edit").
 	 *
-	 * @param string $fullActionRoute Prefix and Action
+	 * @param string $fullActionRoute Extension/Action
 	 * @param array $extraParams Additional params
 	 *
 	 * @return string The link
@@ -54,16 +49,29 @@ class RPF_Link
 	public static function buildLink($fullActionRoute, array $extraParams = array())
 	{
 		$queryString = '';
-		$paramElements = array();
 		
+		$Application = RPF_Application::getInstance();
+		$config = $Application->config;
+		
+		if(isset($config['default']['url_rewrite']) && $config['default']['url_rewrite'] != 0) // mod_rewrite is enabled;
+		{
+			$targetUrl = "/".$fullActionRoute;
+		}
+		else
+		{
+			$routingParts = explode('/', $fullActionRoute, 2); 
+			$action = isset($routingParts[1]) ? ucfirst($routingParts[1]) : '' ; 
+			$extension = (isset($routingParts[0])) ? ucfirst($routingParts[0]) : '' ;  
+			$extraParams['package'] = $extension;
+			$extraParams['action'] = $action;
+			$targetUrl = '/index.php';
+		}
+		
+		$paramElements = array();
 		foreach($extraParams as $name => $value)
 		{
 			$paramElements[] = urlencode($name).'='.urlencode($value);
 		}
-		
-		//$FrontController = RPF_FrontController::getInstance();
-		//$baseUrl = $FrontController->request->baseUrl;
-		$targetUrl = '/'.self::$_indexRoute."/".$fullActionRoute;
 		
 		if (count($paramElements) > 0)
 		{

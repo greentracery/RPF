@@ -4,7 +4,7 @@
  * Main configuration params for RPF Application.
  *
  */
- 
+
  //Default database type (supports mysql, firebird, sqlite):
 $config['db']['type'] = 'sqlite';
 
@@ -39,3 +39,6 @@ $config['smarty']['cache_dir']    = 'Cache/';
 
 // Default extension/action:
 $config['default']['action'] = 'Sample/';
+
+// URL rewrite enable (0/1):
+$config['default']['url_rewrite'] = 1;

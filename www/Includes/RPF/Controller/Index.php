@@ -28,10 +28,12 @@ class RPF_Controller_Index extends RPF_Controller_Abstract
 		}
 		else
 		{
-			throw new Exception('Default action is not set in '. __CLASS__ . "::" . __METHOD__);
+			throw new Exception('Default package/action is not set in config');
 		}
 		
-		$this->response =  $this->responseRedirect('/index.php/'.$defaultAction, array());
+		$defaultActionLink = RPF_Link::buildLink($defaultAction);
+		$this->response =  $this->responseRedirect($defaultActionLink, array());
+		
 	}
 
 }
