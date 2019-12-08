@@ -228,7 +228,7 @@ location = /favicon.ico {
 location = /robots.txt {
  }
 location / {
-	root /var/ww;
+	root /var/www/html;
 	index index.php index.html;
 	try_files $uri $uri/ =404;
 	if (!-e $request_filename) {
