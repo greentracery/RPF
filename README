@@ -151,6 +151,8 @@ Routing supports next URL formats for action controllers:
         servername/Extension/Action
         or
         servername/Extension/Action?param1=value1&param2=value2... for any action controller
+	
+	Class "RPF_Link" contains built-in link builder. If the "url_rewrite" parameter is set to "1" in the configuration, then the link builder will create this kind of links.
 
 - If Apache moldule `mod_rewrite` (or its analogs for another servers) is not supported or disabled, or RewriteEngine is off:
 
@@ -161,6 +163,55 @@ Routing supports next URL formats for action controllers:
         servername/[index.php]/?package=ExtensionName&action=actionName
         or
         servername/[index.php]/?package=Extension&action=Action&param1=value1&param2=value2... for any action controller
+	
+	If the "url_rewrite" parameter is set to "0" or not set in the configuration, then the link builder will create this kind of links.
+
+The following describes the .htaccess directives for Apache mod_rewrite:
+
+Options -Indexes
+DirectoryIndex index.php index.html
+
+Options -Indexes
+DirectoryIndex index.php index.html
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteBase /
+	RewriteCond %{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{REQUEST_FILENAME} -l [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule ^.*$ - [NC,L]
+	RewriteRule ^(css/|js/|styles/|images/|favicon\.ico|robots\.txt) - [NC,L]
+	RewriteRule ^.*$ index.php [NC,L]
+</IfModule>
+
+The following describes configurtion for Nginx web server:
+...
+location = /css/ {
+ }
+location = /js/ {
+ }
+location = /styles/ {
+ }
+location = /images/ {
+ }
+location = /favicon.ico {
+ }
+location = /robots.txt {
+ }
+location / {
+	root /var/ww;
+	index index.php index.html;
+	try_files $uri $uri/ =404;
+	if (!-e $request_filename) {
+	    rewrite ^(.+)$ /index.php break;
+	}
+	#fastCGI params:
+        fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
+        fastcgi_param QUERY_STRING    $query_string;
+	fastcgi_pass  unix:/var/run/php5-fpm.etk.sock;
+	fastcgi_index  index.php;
+ }
+...
 
 Databases
 
@@ -170,6 +221,54 @@ You can create your own classes for another databases in /Includes/RPF_Db/ (type
 
 Each action controller can potentially use its own database - database type, address, port, login and password can be overloaded in constructor.  It is not "good practice", but sometimes it can help your application to work with two (or more) different databases or two (or more) different types of databases at same time.
 You can find an example of such code in sample extension.
+
+Query Builder
+
+You can use built-in query builder for simple SQL queries, when they does not contains table joining or unions. The following shows an example of code in any methods of classes extends RPF_Model_Abstract:
+
+	...
+	// create simple query string:
+	$query_string = " SELECT { * or list of fields } FROM table_name ";
+	// create query buider and set query conditions (array of placeholders creates automatically):
+	$qb = new RPF_Model_QueryBuilder(
+		$query_string,
+		// WHERE, ORDER, LIMIT conditions ( [ ] - not required elements):
+		// 1. conditions (not required):
+		[ array( 
+			[ 'fieldname1' => array( 'condition' => { '<' , '>' , '=' , '<>', '<=' or '>=' } , 'value' => $value ), ]
+			[ 'fieldname2' => array( 'condition' => { 'IS' or 'IS NOT' }, 'value' => null ), ]
+			[ 'fieldname3' => array( 'condition' => 'IN, 'value' => array( $value_1,  $value_2, .... , $value_N ), ]
+			[ 'fieldname4' => array( 'condition' => 'BETWEEN', 'value' => array( $value_min,  $value_max ), ]
+			...
+			[ 'fieldnameN' => array( 'condition' => ... ]
+		), ] 
+		// 2. order by (not required):
+		[ array( 'fieldname1' => 'ASC', [ 'fieldname2' => 'DESC', ... , 'fieldnameN' => { 'ASC' or 'DESC'} ) ],  ]
+		// 3. limit (not required):
+		[ array( $first_item, [ $number_of_items ] ) ] 
+	);
+	// fetch results:
+	$results =  $this->fetch($qb->query, $qb->placeholders);
+	...
+
+Or you can use the classic way:
+
+	...
+	// create full query string :
+	$query_string = " SELECT { * or list of fields } FROM table_name  
+		WHERE fieldname1 = :fieldvalue1 AND fieldname2 <> :fieldvalue2  ... AND fieldnameN = :fieldvalueN ";
+	// create array of named placeholders:
+	$placeholdes = array(
+		'fieldvalue1' => $value1,
+		'fieldvalue2' => $value2,
+		...
+		'fieldvalueN' => $valueN
+	);
+	// fetch results:
+	$results =  $this->fetch($query_string, $placeholdes);
+	...
+
+The following functions are available to retrieve data from queries in any classes extends RPF_Model_Abstract: fetch(), fetchRow(), fetchColumn(), fetchValue() (or exec() for insert- or delete- queries).
 
 Templates.
 Current version on framework uses old PHP compiling template engine Smarty (v.3.1). You can use your own favorite template engine, if necessary.  Replace code in the file /Includes/RPF/TemplateEngine.php with your own to use another engine.

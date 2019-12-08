@@ -29,6 +29,7 @@ Supports MySQL\MadiaDb, Firebird, Sqlite databases, Smarty templates, buit-in cl
 <p>See PSR-0, PSR-4 standards for more info.</p>
 <p>&nbsp;</p>
 <h2>Typical structure of extension:</h2>
+{literal}
 <pre>
     |
     +--[ExtensionName]
@@ -47,12 +48,14 @@ Supports MySQL\MadiaDb, Firebird, Sqlite databases, Smarty templates, buit-in cl
     |
     +--[OtherExtension] ...
 </pre>
+{/literal}
 <p>An example of the structure of names can be seen in /Includes/Sample/</p>
 <p>&nbsp;</p>
 <h2>Action Controllers</h2>
 <p>Any actionControlles extends abstract class `RPF_Controller_Abstract` with it's properties &amp; methods, or any other ActionController Class. Filename of actionController MUST have have the same name as the action name, or Index.php for default controller. All actionControllers MUST be placed in subfolder `Controller` of your extension's folder (or in folder /Includes/RPF/Controller/ for main framework core).</p>
 <p>You can define default action controller in a configuration file (see Config.php)</p>
 <p>The following describes the typical code of actionController:</p>
+{literal}
 <code>
 <pre>
 /**
@@ -70,8 +73,8 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
          - get input parametres from request and filter it:
         */
         
-        $input  = new RPF_Input($this->request->getRequestData());
-        $someVariable = $input->filterSingle('someFieldName', RPF_Input::UINT); // unsigned int
+        $input  = new RPF_Input($this-&gt;request-&gt;getRequestData());
+        $someVariable = $input-&gt;filterSingle('someFieldName', RPF_Input::UINT); // unsigned int
         
         /**
         * Supports next types of input variables:
@@ -92,28 +95,28 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
         */
         
         $model =  new ExtensionName_Model_SomeObject();
-        $outdata = $model->getSomeData();
+        $outdata = $model-&gt;getSomeData();
         
         /**
         * - render the template and send HTML page in response
         * (viewName can be RPF_View_Index or must extends it):
         */
         
-        $this->response =  $this->responseView('viewName', 'templateName', $outdata);
+        $this->response =  $this-&gt;responseView('viewName', 'templateName', $outdata);
         
         /**
         * - or send it in JSON representation for APIs or web-servises
         * (viewName can be RPF_View_JSON or must extends it):
         */
         
-        $this->response =  $this->responseView('viewName', null, $outdata);
+        $this->response =  $this-&gt;responseView('viewName', null, $outdata);
         
         /**
         * - or create image from BLOB and send it
         * (viewName can be RPF_View_Image or must extends it):
         */
         
-        $this->response =  $this->responseView('viewName', null, $imagedata);
+        $this->response =  $this-&gt;responseView('viewName', null, $imagedata);
         
         /**
         * array $imagedata must contains next elements:
@@ -126,13 +129,13 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
         * - or make redirect to another URL with adittional params in query string:
         */
         
-        $this->response =  $this->responseRedirect($newURL, $outdata);
+        $this->response =  $this-&gt;responseRedirect($newURL, $outdata);
         
         /**
         * - or send an error:
         */
         
-        $this->response =  $this->responseError('Error message', 404); // or another Http code
+        $this->response =  $this-&lg;responseError('Error message', 404); // or another Http code
         
         /**
          - or stop action and do nothing:
@@ -143,6 +146,7 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
 }
 </pre>
 </code>
+{/literal}
 <h2>Routing and URL format.</h2>
 <p>Routing supports next URL formats for action controllers:</p>
 <ul>
@@ -165,6 +169,7 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
 		<br>or<br>
 		&nbsp;<a href="/Sample/JSON?region_id=1" target="_blank">JSON action controller with parametres in query string.</a> 
 		</li>
+		<p><i>Class "RPF_Link" contains built-in link builder. If the "url_rewrite" parameter is set to "1" in the configuration, then the link builder will create this kind of links.</i></p>
 	</ul>
 </li>
 <li>
@@ -182,9 +187,63 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
 		<br>or<br> 
 		&nbsp;<a href="/?package=Sample&action=JSON&region_id=1" target="_blank">Action controller name with other parametres in query string.</a> 
 		</li>
+		<p><i>If the "url_rewrite" parameter is set to "0" or not set in the configuration, then the link builder will create this kind of links.</i></p>
 	</ul>
 </li>
 </ul>
+<p>The following describes the .htaccess directives for Apache mod_rewrite:</p>
+{literal}
+<code>
+<pre>
+Options -Indexes
+DirectoryIndex index.php index.html
+&lt;IfModule mod_rewrite.c&gt;
+	RewriteEngine On
+	RewriteBase /
+	RewriteCond %{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{REQUEST_FILENAME} -l [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule ^.*$ - [NC,L]
+	RewriteRule ^(css/|js/|styles/|images/|favicon\.ico|robots\.txt) - [NC,L]
+	RewriteRule ^.*$ index.php [NC,L]
+&lt;/IfModule&gt;
+</pre>
+</code>
+{/literal}
+<p>The following describes configurtion for Nginx web server:</p>
+{literal}
+<code>
+<pre>
+...
+location = /css/ {
+ }
+location = /js/ {
+ }
+location = /styles/ {
+ }
+location = /images/ {
+ }
+location = /favicon.ico {
+ }
+location = /robots.txt {
+ }
+location / {
+	root /var/ww;
+	index index.php index.html;
+	try_files $uri $uri/ =404;
+	if (!-e $request_filename) {
+	    rewrite ^(.+)$ /index.php break;
+	}
+	#fastCGI params:
+        fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
+        fastcgi_param QUERY_STRING    $query_string;
+	fastcgi_pass  unix:/var/run/php5-fpm.etk.sock;
+	fastcgi_index  index.php;
+ }
+...
+</pre>
+</code>
+{/literal}
 <a name="Db">
 <h2>Databases</h2>
 <p>Framework supports MySQL\MadiaDb, Firebird, Sqlite databases. You can define database type and othes required parametres in Config file.</p>
@@ -218,6 +277,60 @@ Regions: <select name="region_id">
 </div>
 <p>Each action controller can potentially use its own database - database type, address, port, login and password can be overloaded in constructor.  It is not "good practice", but sometimes it can help your application to work with two (or more) different databases or two (or more) different types of databases at same time.</p>
 <p>You can find an example of such code in sample extension.</p>
+<h2>Query Builder</h2>
+<p>You can use built-in query builder for simple SQL queries, when they does not contains table joining or unions.  The following shows an example of code in any methods of classes extends RPF_Model_Abstract:</p>
+{literal}
+<code>
+<pre>
+	...
+	// create simple query string:
+	$query_string = " SELECT { * or list of fields } FROM table_name ";
+	// create query buider and set query conditions (array of placeholders creates automatically):
+	$qb = new RPF_Model_QueryBuilder(
+		$query_string,
+		// WHERE, ORDER, LIMIT conditions ( [ ] - not required elements):
+		// 1. conditions (not required):
+		[ array( 
+			[ 'fieldname1' => array( 'condition' =&gt; { '&lt;' , '&gt;' , '=' , '&lt;&gt;', '&lt;=' or '&gt;=' } , 'value' =&gt; $value ), ]
+			[ 'fieldname2' => array( 'condition' =&gt; { 'IS' or 'IS NOT' }, 'value' =&gt; null ), ]
+			[ 'fieldname3' => array( 'condition' =&gt; 'IN, 'value' =&gt; array( $value_1,  $value_2, .... , $value_N ), ]
+			[ 'fieldname4' => array( 'condition' =&gt; 'BETWEEN', 'value' =&gt; array( $value_min,  $value_max ), ]
+			...
+			[ 'fieldnameN' => array( 'condition' =&gt; ... ]
+		), ] 
+		// 2. order by (not required):
+		[ array( 'fieldname1' =&gt; 'ASC', [ 'fieldname2' =&gt; 'DESC', ... , 'fieldnameN' =&gt; { 'ASC' or 'DESC'} ) ],  ]
+		// 3. limit (not required):
+		[ array( $first_item, [ $number_of_items ] ) ] 
+	);
+	// fetch results:
+	$results =  $this-&gt;fetch($qb->query, $qb-&gt;placeholders);
+	...
+</pre>
+</code>
+{/literal}
+<p>Or you can use the classic way:</p>
+{literal}
+<code>
+<pre>
+	...
+	// create full query string :
+	$query_string = " SELECT { * or list of fields } FROM table_name  
+		WHERE fieldname1 = :fieldvalue1 AND fieldname2 &lt;&gt; :fieldvalue2  ... AND fieldnameN = :fieldvalueN ";
+	// create array of named placeholders:
+	$placeholdes = array(
+		'fieldvalue1' =&gt; $value1,
+		'fieldvalue2' =&gt; $value2,
+		...
+		'fieldvalueN' =&gt; $valueN
+	);
+	// fetch results:
+	$results =  $this-&gt;fetch($query_string, $placeholdes);
+	...
+</pre>
+</code>
+{/literal}
+<p>The following functions are available to retrieve data from queries in any classes extends RPF_Model_Abstract: <i>fetch(), fetchRow(), fetchColumn(), fetchValue()</i> (or <i>exec()</i> for insert- or delete- queries).</p>
 <h2>Templates</h2>
 <p>Current version on framework uses old PHP compiling template engine Smarty (v.3.1). You can use your own favorite template engine, if necessary.  Replace code in the file /Includes/RPF/TemplateEngine.php with your own to use another engine.</p>
 <p>&nbsp;</p>
