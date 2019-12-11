@@ -62,7 +62,7 @@ class RPF_View_Image extends RPF_View
 	* @bool image_resize = false
 	* WARNING! Using image_resize = true may degrade image quality.
 	*/
-	protected $image_resize = false;
+	protected $image_redraw = false;
 	
 	public function Render()
 	{
@@ -82,45 +82,59 @@ class RPF_View_Image extends RPF_View
 		
 		if(isset($in_data['image_filesize'])) $this->image_filesize = $in_data['image_filesize'];
 		
-		if(isset($in_data['image_resize'])) $this->image_resize = $in_data['image_resize'];
+		if(isset($in_data['image_redraw'])) $this->image_redraw = $in_data['image_redraw'];
 		
 		$this->image_etag = md5($in_data['image_data']);
 		
-		if (function_exists('imagecreatefromstring') && function_exists('getimagesizefromstring') 
-		&& $this->image_resize == true)
+		$this->_sendImage();
+	}
+	
+	/** 
+	* Sends redrawn or original image
+	*/
+	protected function _sendImage()
+	{
+		if(!$this->image_redraw)
 		{
-			try
-			{
-				$img = imagecreatefromstring($this->image_data);
-				if(false != $img)
-				{
-					$imagesize = getimagesizefromstring($this->image_data);
-					$this->_sendGDImage ($img, $imagesize[2]);
-				}
-				else
-				{
-					$this->_sendSimpleImage();
-				}
-			}
-			catch(Exception $e)
-			{
-				$this->_sendSimpleImage();
-			}
+			$this->_sendOrigImage();
 		}
 		else
 		{
-			$this->_sendSimpleImage();
+			if( !function_exists('imagecreatefromstring') && !function_exists('getimagesizefromstring') )
+			{
+				$this->_sendOrigImage();
+			}
+			else
+			{
+				try
+				{
+					$img = imagecreatefromstring($this->image_data);
+					if(false != $img)
+					{
+						$imagesize = getimagesizefromstring($this->image_data);
+						$this->_sendRedrawnImage ($img, $imagesize[2]);
+					}
+					else
+					{
+						$this->_sendOrigImage();
+					}
+				}
+				catch(Exception $e)
+				{
+					$this->_sendOrigImage();
+				}
+			}
 		}
-		exit(0);
 	}
 	
 	/**
+	* Redraws image & sends it.
 	* @param resourse $image
 	* @param integer $image_fromat. 
 	* Supports IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG, 
 	* IMAGETYPE_BMP, IMAGETYPE_WEBP, IMAGETYPE_WBMP 
 	*/
-	protected function  _sendGDImage ($image, $image_format = IMAGETYPE_JPEG)
+	protected function  _sendRedrawnImage ($image, $image_format = IMAGETYPE_JPEG)
 	{
 		try
 		{
@@ -148,7 +162,7 @@ class RPF_View_Image extends RPF_View
 			{
 				throw new Exception('Function '.$Gd_Createimage_Func.' is not defined in'. __CLASS__ . "::" . __METHOD__);
 			}
-			imagejpeg($image);
+			$Gd_Createimage_Func($image);
 			$size = ob_get_length();
 			header('Content-Type:'.$image_mime_type);
 			header('Content-Length: ' . $size);
@@ -157,31 +171,39 @@ class RPF_View_Image extends RPF_View
 			header('Content-disposition: filename="'.$this->image_etag.$image_file_ext.'"');
 			header('Pragma: public');
 			header('X-Server: RPF');
-			header('X-Server-Gd: Gd');
+			header('X-ImageMode: Redrawn');
 			ob_end_flush();
 			imagedestroy($image);
+			exit(0);
 		}
 		catch(Exception $e)
 		{
-			// somthing is wrong.. start simple image sending;
-			// что-то пошло не так.. запустим простое создание изображения
-			$this->_sendSimpleImage();
+			// somthing is wrong.. start simple image sending w/o any transformation;
+			// что-то пошло не так.. запустим простую отправку изображения
+			$this->_sendOrigImage();
 		}
 	}
 	
-	protected function _sendSimpleImage()
+	/**
+	* Sends file with original image w/o transformation
+	* or octet-stream if MIME-type of image is unknown
+	*/
+	protected function _sendOrigImage()
 	{
 			if(!empty($this->image_mime_type))
 			{
 				$image_mime_type = $this->image_mime_type;
+				$file_ext = '.'.substr($this->image_mime_type, strpos($this->image_mime_type, '/'));
 			}
 			elseif(!empty($this->image_format))
 			{
 				$image_mime_type = 'image/'.$this->image_format;
+				$file_ext = '.'.$this->image_format;
 			}
 			else
 			{
-				$image_mime_type = image_type_to_mime_type(IMAGETYPE_JPEG);
+				$image_mime_type = 'application/octet-stream';
+				$file_ext = '.bin';
 			}
 			
 			if(!empty($this->image_filesize))
@@ -197,10 +219,10 @@ class RPF_View_Image extends RPF_View
 			header('Content-Length: ' . $image_size);
 			header('Expires: ' .  date("r", time() + self::CACHE_TIME));
 			header('Etag: '.$this->image_etag);
-			header('Content-disposition: filename="'.$this->image_etag.'" ');
+			header('Content-disposition: filename="'.$this->image_etag.$file_ext.'" ');
 			header('Pragma: public');
 			header('X-Server: RPF');
-			header('X-Server-Gd: Simple');
+			header('X-ImageMode: Orig');
 			echo $this->image_data;
 			exit(0);
 	}
