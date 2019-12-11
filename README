@@ -115,10 +115,13 @@ class ExtensionName_Controller_Index extends RPF_Controller_Abstract
         $this->response =  $this->responseView('viewName', null, $imagedata);
         
         /**
-        * array $imagedata must contains next elements:
-        * - 'image_mime_type' - MIME type of image,
-        * - 'image_size' - size of image (bytes),
-        * - 'image_data' - binary data from image file or BLOB.
+        * Array $imagedata must contains next elements:
+        * - string 'image_data' - binary data from image file or BLOB.
+	* - string 'image_mime_type' - MIME type of image,
+	* or string 'image_format' - format of image (Jpeg, gif, png etc...)
+	* Array $imagedata can contains next elements:
+        * - integer 'image_size' - size of image (bytes),
+        * - bool ''image_redraw' - redraw image using library Gd (only for formats supported by the library)
         */
         
         /**
