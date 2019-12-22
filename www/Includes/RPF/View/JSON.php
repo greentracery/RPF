@@ -40,6 +40,8 @@ class RPF_View_JSON extends RPF_View
 		header("X-Server: RPF");
 		header("Content-Type: application/json; charset=utf-8");
 		header("Content-Length: ".strlen($out));
+		$this->_custom_header();
+		$this->_cors_header();
 		echo $out;
 		exit(0);
 	}

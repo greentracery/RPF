@@ -29,6 +29,8 @@ class RPF_View_Index extends RPF_View
 		header("Cache-Control: no-store, no-cache, must-revalidate"); 
 		header("Expires: " .  date("r"));
 		header("X-Server: RPF");
+		$this->_custom_header();
+		$this->_cors_header();
 		
 		$templateEngine->display($this->_templateName.'.tpl');
 	}

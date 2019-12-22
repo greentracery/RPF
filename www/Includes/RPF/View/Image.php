@@ -172,6 +172,8 @@ class RPF_View_Image extends RPF_View
 			header('Pragma: public');
 			header('X-Server: RPF');
 			header('X-ImageMode: Redrawn');
+			$this->_custom_header();
+			$this->_cors_header();
 			ob_end_flush();
 			imagedestroy($image);
 			exit(0);
@@ -223,6 +225,8 @@ class RPF_View_Image extends RPF_View
 			header('Pragma: public');
 			header('X-Server: RPF');
 			header('X-ImageMode: Orig');
+			$this->_custom_header();
+			$this->_cors_header();
 			echo $this->image_data;
 			exit(0);
 	}

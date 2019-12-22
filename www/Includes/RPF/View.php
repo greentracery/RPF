@@ -29,6 +29,20 @@ abstract class RPF_View
 	* @array
 	*/
 	protected $_params = array();
+	
+	/**
+	* Custom headers
+	*
+	* @array
+	*/
+	protected $_custom_headers = array();
+	
+	/**
+	* CORS domains list
+	*
+	* @array
+	*/
+	protected $_cors_domains = array();	
 
 	/**
 	* Constructor
@@ -56,4 +70,29 @@ abstract class RPF_View
 		$this->_params = array_merge($this->_params, $params);
 	}
 	
+	/**
+	* Sets custom headers, if $this->_custom_headers is not empty
+	*/
+	protected function _custom_header()
+	{
+		if(is_array($this->_custom_headers) && count($this->_custom_headers) > 0)
+		{
+			foreach($this->_custom_headers as $_header_string)
+			{
+				header($_header_string);
+			}
+		}
+	}
+	
+	/**
+	* Sets 'Access-Control-Allow-Origin' header, if $this->_cors_domains is not empty
+	*/
+	protected function _cors_header()
+	{
+		if(is_array($this->_cors_domains) && count($this->_cors_domains) > 0)
+		{
+			$_origin = implode(' ', $this->_cors_domains);
+			header('Access-Control-Allow-Origin: '.$_origin);
+		}
+	}
 }
